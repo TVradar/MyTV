@@ -134,6 +134,11 @@ def scrape_site(store, cfg, query):
     try:
         r = requests.get(url, headers=HEADERS, timeout=25)
         soup = BeautifulSoup(r.text, "lxml")
+        ttl = (soup.title.string or "-").strip()[:80] if soup.title else "-"
+        print(f"[{store}] HTTP {r.status_code} | حجم {len(r.text)} | عنوان: {ttl}")
+        print(f"[{store}] بطاقات: {len(soup.select(cfg['card']))} | JSON-LD: {r.text.count('ld+json')} | NEXT_DATA: {'__NEXT_DATA__' in r.text}")
+        if r.status_code != 200 or len(r.text) < 20000:
+            print(f"[{store}] نص الصفحة: {soup.get_text(' ', strip=True)[:250]}")
     except Exception as e:
         print(f"[{store}] فشل: {e}"); return found
     for c in soup.select(cfg["card"])[:MAX_PER_SITE * 2]:
